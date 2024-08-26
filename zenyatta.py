@@ -1,5 +1,6 @@
 import os
 import discord
+from discord.ext import commands
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -11,27 +12,17 @@ intents = discord.Intents.default()
 intents.messages = True
 intents.message_content = True
 
-# Initialize
-client = discord.Client(intents=intents)
+# Create the bot
+bot = commands.Bot(command_prefix="/", intents=intents)
 
-# When the bot is ready
-@client.event
+@bot.event
 async def on_ready():
-    print(f'Logged in as {client.user.name}')
+    await bot.tree.sync()
+    print(f"Logged in as {bot.user}")
 
-# When the bot gets a message
-@client.event
-async def on_message(message):
-    # Ignore the bot's own messages
-    if message.author == client.user:
-        return
-
-    tokens = message.content.split(' ')
-    if tokens[0] == "rec":
-        try:
-            await message.channel.send(message.content)
-        except discord.errors.HTTPException:
-            print("Failed to send the message")
+@bot.tree.command(name="rec", description="Give book recommendations based on your prompt")
+async def rec(interaction: discord.Interaction, prompt: str):
+    await interaction.response.send_message(f"Your prompt was '{prompt}'")
 
 # Start the bot
-client.run(BOT_TOKEN)
+bot.run(BOT_TOKEN)
